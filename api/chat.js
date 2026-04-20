@@ -1,6 +1,12 @@
 export default async function handler(req, res) {
   try {
-    const { message } = req.body;
+    // ✅ 兼容 Vercel body 解析问题
+    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    const message = body?.message;
+
+    if (!message) {
+      return res.status(400).json({ reply: "没有收到 message" });
+    }
 
     const response = await fetch("https://api.coze.com/open_api/v2/chat", {
       method: "POST",
@@ -20,7 +26,6 @@ export default async function handler(req, res) {
 
     let reply = "暂无回复";
 
-    // ✅ 正确解析 Coze 返回
     if (data && data.messages) {
       const msg = data.messages.find(m => m.type === "answer");
       if (msg) {
