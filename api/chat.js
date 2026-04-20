@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-
+console.log("coze返回：", JSON.stringify(data));
     let reply = "暂无回复";
 
     if (data.messages && data.messages.length > 0) {
