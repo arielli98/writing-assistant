@@ -11,7 +11,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         bot_id: process.env.BOT_ID,
         user: "user_001",
-        query: message
+        query: message,
+        stream: false
       })
     });
 
@@ -19,6 +20,7 @@ export default async function handler(req, res) {
 
     let reply = "暂无回复";
 
+    // ✅ 正确解析 Coze 返回
     if (data && data.messages) {
       const msg = data.messages.find(m => m.type === "answer");
       if (msg) {
@@ -28,7 +30,9 @@ export default async function handler(req, res) {
 
     res.status(200).json({ reply });
 
-  } catch (err) {
-    res.status(500).json({ reply: "服务器错误" });
+  } catch (error) {
+    res.status(500).json({
+      reply: "后端报错：" + error.message
+    });
   }
 }
