@@ -151,10 +151,14 @@ async function send() {
 
     const data = await res.json();
 
-    let reply = "暂无回复";
-    if (data.messages && data.messages.length > 0) {
-      reply = data.messages[0].content;
-    }
+   let reply = "暂无回复";
+
+if (data && data.messages) {
+  const msg = data.messages.find(m => m.type === "answer");
+  if (msg) {
+    reply = msg.content;
+  }
+}
 
     loading.innerText = reply;
 
