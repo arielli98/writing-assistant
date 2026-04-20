@@ -1,259 +1,166 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>公文写作助手</title>
 
 <style>
 body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont;
-    background: #f5f7fb;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont;
+  display: flex;
+  height: 100vh;
 }
 
-/* 顶部 */
-.header {
-    height: 60px;
-    background: #1e2a38;
-    color: white;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    font-size: 18px;
-}
-
-/* 布局 */
-.container {
-    display: flex;
-    height: calc(100vh - 60px);
-}
-
-/* 功能区 */
+/* 左侧 */
 .sidebar {
-    width: 260px;
-    background: white;
-    border-right: 1px solid #ddd;
-    padding: 20px;
+  width: 260px;
+  background: #f5f5f5;
+  padding: 20px;
 }
 
 .sidebar h3 {
-    margin-top: 0;
+  margin-top: 0;
 }
 
 .quick-btn {
-    display: block;
-    margin-bottom: 10px;
-    padding: 10px;
-    background: #eef3ff;
-    border: none;
-    cursor: pointer;
-    border-radius: 8px;
-    text-align: left;
+  background: white;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-.quick-btn:hover {
-    background: #dbe6ff;
+/* 主区 */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-/* 对话区 */
-.chat-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+.chat {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
 }
 
-.messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
+.msg {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 60%;
 }
 
-.message {
-    margin-bottom: 15px;
-    display: flex;
+.user {
+  background: #007aff;
+  color: white;
+  margin-left: auto;
 }
 
-.message.ai {
-    justify-content: flex-start;
-}
-
-.message.user {
-    justify-content: flex-end;
-}
-
-.bubble {
-    max-width: 60%;
-    padding: 12px;
-    border-radius: 10px;
-}
-
-.ai .bubble {
-    background: #e9eef6;
-}
-
-.user .bubble {
-    background: #4a90e2;
-    color: white;
-}
-
-.timestamp {
-    font-size: 10px;
-    color: #999;
-    margin-top: 5px;
+.bot {
+  background: #eee;
 }
 
 /* 输入区 */
-.input-area {
-    border-top: 1px solid #ddd;
-    padding: 15px;
-    display: flex;
-    gap: 10px;
+.input-box {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ddd;
 }
 
 textarea {
-    flex: 1;
-    resize: none;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+  flex: 1;
+  padding: 10px;
+  height: 60px;
 }
 
-button.send {
-    background: #4a90e2;
-    color: white;
-    border: none;
-    padding: 0 20px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-/* 状态 */
-.typing {
-    font-size: 12px;
-    color: #888;
-    margin-left: 10px;
-    animation: blink 1s infinite;
-}
-
-@keyframes blink {
-    0% {opacity: 0.3;}
-    50% {opacity: 1;}
-    100% {opacity: 0.3;}
-}
-
-/* 页脚 */
-.footer {
-    text-align: center;
-    font-size: 12px;
-    padding: 10px;
-    background: #f0f0f0;
+button {
+  margin-left: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-    公文写作助手
+<!-- 左侧 -->
+<div class="sidebar">
+  <h3>快捷功能</h3>
+  <div class="quick-btn" onclick="quick('写一份年度工作报告')">年度报告</div>
+  <div class="quick-btn" onclick="quick('写一份会议通知')">会议通知</div>
+  <div class="quick-btn" onclick="quick('写一份工作总结')">工作总结</div>
 </div>
 
-<div class="container">
+<!-- 主区 -->
+<div class="main">
+  <div id="chat" class="chat"></div>
 
-    <!-- 功能区 -->
-    <div class="sidebar">
-        <h3>功能区</h3>
-
-        <button class="quick-btn" onclick="quickPrompt('撰写一份年度工作报告')">
-            📄 年度工作报告
-        </button>
-
-        <button class="quick-btn" onclick="quickPrompt('写一份会议纪要')">
-            📝 会议纪要
-        </button>
-
-        <button class="quick-btn" onclick="quickPrompt('生成一份通知公告')">
-            📢 通知公告
-        </button>
-
-        <button class="quick-btn" onclick="newChat()">
-            ➕ 新建对话
-        </button>
-    </div>
-
-    <!-- 对话区 -->
-    <div class="chat-area">
-        <div class="messages" id="messages"></div>
-
-        <!-- 输入区 -->
-        <div class="input-area">
-            <textarea id="input" rows="2" placeholder="请输入你的指令..."></textarea>
-            <button class="send" onclick="sendMessage()">发送</button>
-        </div>
-    </div>
-</div>
-
-<div class="footer">
-    © 2026 公文助手 | 本地 MVP 版本
+  <div class="input-box">
+    <textarea id="input" placeholder="请输入你的需求..."></textarea>
+    <button onclick="send()">发送</button>
+  </div>
 </div>
 
 <script>
-const messages = document.getElementById('messages');
+const chat = document.getElementById("chat");
 
-function addMessage(text, type) {
-    const msg = document.createElement('div');
-    msg.className = 'message ' + type;
+// ✅ 在这里填你的信息
+const API_KEY = "pat_2BmbXYicb21RZAu0epzksVagjcSJnIXFXYCt7a9aOJEnOpK6Yp8GBXgL9q7l3Fnm";
+const BOT_ID = "7628532944344563752";
 
-    const bubble = document.createElement('div');
-    bubble.className = 'bubble';
-    bubble.innerText = text;
-
-    msg.appendChild(bubble);
-
-    messages.appendChild(msg);
-    messages.scrollTop = messages.scrollHeight;
+// 添加消息
+function addMsg(text, cls) {
+  const div = document.createElement("div");
+  div.className = "msg " + cls;
+  div.innerText = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
 }
 
-function sendMessage() {
-    const input = document.getElementById('input');
-    const text = input.value.trim();
-    if (!text) return;
-
-    addMessage(text, 'user');
-    input.value = '';
-
-    showTyping();
-
-    setTimeout(() => {
-        removeTyping();
-        addMessage(generateFakeReply(text), 'ai');
-    }, 1200);
+// 快捷按钮
+function quick(text) {
+  document.getElementById("input").value = text;
 }
 
-function quickPrompt(text) {
-    document.getElementById('input').value = text;
-}
+// 发送消息
+async function send() {
+  const text = document.getElementById("input").value;
+  if (!text) return;
 
-function newChat() {
-    messages.innerHTML = '';
-}
+  addMsg(text, "user");
 
-function showTyping() {
-    const typing = document.createElement('div');
-    typing.id = 'typing';
-    typing.className = 'typing';
-    typing.innerText = 'AI 正在输入...';
-    messages.appendChild(typing);
-    messages.scrollTop = messages.scrollHeight;
-}
+  const loading = document.createElement("div");
+  loading.className = "msg bot";
+  loading.innerText = "正在生成...";
+  chat.appendChild(loading);
 
-function removeTyping() {
-    const typing = document.getElementById('typing');
-    if (typing) typing.remove();
-}
+  try {
+    const res = await fetch("https://api.coze.com/open_api/v2/chat", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + API_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        bot_id: BOT_ID,
+        user: "user_001",
+        query: text
+      })
+    });
 
-function generateFakeReply(input) {
-    return "已根据你的需求生成初稿：\n\n【" + input + "】\n\n（这里是模拟AI生成内容，后续可接入真实API）";
+    const data = await res.json();
+
+    let reply = "暂无回复";
+    if (data.messages && data.messages.length > 0) {
+      reply = data.messages[0].content;
+    }
+
+    loading.innerText = reply;
+
+  } catch (err) {
+    loading.innerText = "请求失败，请检查API配置";
+  }
 }
 </script>
 
