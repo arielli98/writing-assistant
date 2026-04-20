@@ -12,26 +12,24 @@ body {
   height: 100vh;
 }
 
-/* 左侧 */
 .sidebar {
   width: 260px;
   background: #f5f5f5;
   padding: 20px;
 }
 
-.sidebar h3 {
-  margin-top: 0;
-}
-
 .quick-btn {
   background: white;
-  padding: 10px;
+  padding: 12px;
   margin: 10px 0;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
+  transition: 0.2s;
+}
+.quick-btn:hover {
+  background: #eaeaea;
 }
 
-/* 主区 */
 .main {
   flex: 1;
   display: flex;
@@ -46,9 +44,10 @@ body {
 
 .msg {
   margin: 10px 0;
-  padding: 10px;
-  border-radius: 10px;
+  padding: 12px;
+  border-radius: 12px;
   max-width: 60%;
+  line-height: 1.6;
 }
 
 .user {
@@ -61,7 +60,6 @@ body {
   background: #eee;
 }
 
-/* 输入区 */
 .input-box {
   display: flex;
   padding: 10px;
@@ -72,19 +70,23 @@ textarea {
   flex: 1;
   padding: 10px;
   height: 60px;
+  border-radius: 8px;
 }
 
 button {
   margin-left: 10px;
   padding: 10px 20px;
   cursor: pointer;
+  border-radius: 8px;
+  background: #007aff;
+  color: white;
+  border: none;
 }
 </style>
 </head>
 
 <body>
 
-<!-- 左侧 -->
 <div class="sidebar">
   <h3>快捷功能</h3>
   <div class="quick-btn" onclick="quick('写一份年度工作报告')">年度报告</div>
@@ -92,7 +94,6 @@ button {
   <div class="quick-btn" onclick="quick('写一份工作总结')">工作总结</div>
 </div>
 
-<!-- 主区 -->
 <div class="main">
   <div id="chat" class="chat"></div>
 
@@ -105,9 +106,9 @@ button {
 <script>
 const chat = document.getElementById("chat");
 
-// ✅ 在这里填你的信息
-const API_KEY = "pat_2BmbXYicb21RZAu0epzksVagjcSJnIXFXYCt7a9aOJEnOpK6Yp8GBXgL9q7l3Fnm";
-const BOT_ID = "7628532944344563752";
+// ⚠️ 这里填你的
+const API_KEY = "👉在这里填你的API_KEY";
+const BOT_ID = "👉在这里填你的BOT_ID";
 
 // 添加消息
 function addMsg(text, cls) {
@@ -118,12 +119,10 @@ function addMsg(text, cls) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-// 快捷按钮
 function quick(text) {
   document.getElementById("input").value = text;
 }
 
-// 发送消息
 async function send() {
   const text = document.getElementById("input").value;
   if (!text) return;
@@ -136,6 +135,8 @@ async function send() {
   chat.appendChild(loading);
 
   try {
+    console.log("开始请求API...");
+
     const res = await fetch("https://api.coze.com/open_api/v2/chat", {
       method: "POST",
       headers: {
@@ -145,25 +146,31 @@ async function send() {
       body: JSON.stringify({
         bot_id: BOT_ID,
         user: "user_001",
-        query: text
+        query: text,
+        stream: false
       })
     });
 
+    console.log("响应状态:", res.status);
+
     const data = await res.json();
+    console.log("返回数据:", data);
 
-   let reply = "暂无回复";
+    let reply = "⚠️ 未获取到回复";
 
-if (data && data.messages) {
-  const msg = data.messages.find(m => m.type === "answer");
-  if (msg) {
-    reply = msg.content;
-  }
-}
+    // ✅ 更稳的解析方式
+    if (data?.messages?.length) {
+      const answerMsg = data.messages.find(m => m.type === "answer");
+      if (answerMsg?.content) {
+        reply = answerMsg.content;
+      }
+    }
 
     loading.innerText = reply;
 
   } catch (err) {
-    loading.innerText = "请求失败，请检查API配置";
+    console.error("请求错误:", err);
+    loading.innerText = "❌ 请求失败（大概率是被浏览器拦截或KEY问题）";
   }
 }
 </script>
