@@ -87,11 +87,16 @@ async function send() {
   const loadingMsg = addMsg("正在斟酌文辞，请稍候...", "bot");
 
   try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text })
-    });
+    const cid = localStorage.getItem("cid"); // 👈 新增
+
+const res = await fetch("/api/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    message: text,
+    conversation_id: cid   // 👈 新增
+  })
+});
 
     const data = await res.json();
 
