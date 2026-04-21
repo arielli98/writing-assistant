@@ -117,8 +117,7 @@ button:hover {
 
   <div class="input-box">
     <textarea id="input" placeholder="请输入你的需求..."></textarea>
-    <button onclick="send()">发送</button>
-  </div>
+    <button id="sendBtn">发送</button>
 </div>
 
 <script>
@@ -168,6 +167,7 @@ async function send() {
     loading.innerText = "请求失败（后端未部署或报错）";
   }
 }
+  document.getElementById("sendBtn").addEventListener("click", send);
 </script>
 
 </body>
