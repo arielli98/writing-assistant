@@ -1,42 +1,37 @@
-export default async function handler(req, res) {
+export async function POST(req) {
+  const { message } = await req.json();
+
   try {
-    // ✅ 手动解析 body（关键！！）
-    const body = typeof req.body === "string"
-      ? JSON.parse(req.body)
-      : req.body;
-
-    const message = body?.message;
-
-    if (!message) {
-      return res.status(400).json({ reply: "没有收到 message" });
-    }
-
-    const response = await fetch("https://api.coze.com/open_api/v2/chat", {
+    const res = await fetch("https://api.coze.com/open_api/v2/chat", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.COZE_API_KEY}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.COZE_API_TOKEN}`
       },
       body: JSON.stringify({
-        bot_id: process.env.BOT_ID,
-        user: "user_001",
-        query: message
+        bot_id: "7628532944344563752",
+        user: "user_123",
+        query: message,
+        stream: false
       })
     });
 
-    const data = await response.json();
-console.log("coze返回：", JSON.stringify(data));
-    let reply = "暂无回复";
+    const data = await res.json();
 
-    if (data.messages && data.messages.length > 0) {
-      reply = data.messages[0].content;
-    }
+    console.log("Coze返回：", data);
 
-    res.status(200).json({ reply });
+    return Response.json({
+      reply:
+        data?.messages?.[0]?.content ||
+        data?.messages?.find(m => m.type === "answer")?.content ||
+        "AI无返回"
+    });
 
   } catch (err) {
-    res.status(500).json({
-      reply: "后端报错：" + err.message
+    console.error("报错：", err);
+
+    return Response.json({
+      reply: "报错：" + err.message
     });
   }
 }
