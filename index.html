@@ -3,53 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>公文写作助手</title>
-
+<title>AI 公文写作助手 - 多轮对话版</title>
 <style>
-body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; height: 100vh; background: #f2f3f5; }
-/* 左侧 */
-.sidebar { width: 260px; background: white; padding: 20px; border-right: 1px solid #eee; display: flex; flex-direction: column; }
-.sidebar h3 { margin-top: 0; color: #333; font-size: 18px; border-bottom: 2px solid #007aff; padding-bottom: 10px; }
-.quick-btn { background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; transition: 0.2s; border: 1px solid #eee; font-size: 14px; }
-.quick-btn:hover { background: #e9ecef; border-color: #007aff; color: #007aff; }
-
-/* 主区 */
-.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
-/* 聊天区 */
-.chat { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
-.msg { margin: 10px 0; padding: 14px; border-radius: 12px; max-width: 80%; line-height: 1.6; font-size: 15px; word-wrap: break-word; white-space: pre-wrap; /* 关键：保留公文换行格式 */ }
-.user { background: #007aff; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-.bot { background: white; border: 1px solid #e0e0e0; align-self: flex-start; border-bottom-left-radius: 2px; color: #333; }
-
-/* 输入区 */
-.input-box { display: flex; padding: 20px; border-top: 1px solid #ddd; background: white; align-items: flex-end; }
-textarea { flex: 1; padding: 12px; height: 80px; border-radius: 8px; border: 1px solid #ccc; font-size: 15px; resize: none; outline: none; }
-textarea:focus { border-color: #007aff; }
-button { margin-left: 12px; padding: 12px 24px; border: none; background: #007aff; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; height: 45px; }
-button:hover { background: #0056b3; }
-button:disabled { background: #ccc; cursor: not-allowed; }
+    body { margin: 0; font-family: -apple-system, system-ui, sans-serif; display: flex; height: 100vh; background: #f2f3f5; }
+    .sidebar { width: 260px; background: white; padding: 20px; border-right: 1px solid #eee; display: flex; flex-direction: column; }
+    .sidebar h3 { margin-top: 0; color: #333; border-bottom: 2px solid #007aff; padding-bottom: 10px; }
+    .quick-btn { background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; transition: 0.2s; border: 1px solid #eee; font-size: 14px; }
+    .quick-btn:hover { background: #e9ecef; border-color: #007aff; color: #007aff; }
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .chat { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+    .msg { margin: 10px 0; padding: 14px; border-radius: 12px; max-width: 80%; line-height: 1.6; font-size: 15px; word-wrap: break-word; white-space: pre-wrap; }
+    .user { background: #007aff; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+    .bot { background: white; border: 1px solid #e0e0e0; align-self: flex-start; border-bottom-left-radius: 2px; color: #333; }
+    .input-box { display: flex; padding: 20px; border-top: 1px solid #ddd; background: white; align-items: flex-end; }
+    textarea { flex: 1; padding: 12px; height: 80px; border-radius: 8px; border: 1px solid #ccc; font-size: 15px; resize: none; outline: none; }
+    button { margin-left: 12px; padding: 12px 24px; border: none; background: #007aff; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
 </style>
 </head>
-
 <body>
 
 <div class="sidebar">
-  <h3>快捷功能</h3>
-  <div class="quick-btn" onclick="quick('请帮我写一份关于加强办公区卫生管理的通知')">会议通知</div>
-  <div class="quick-btn" onclick="quick('请帮我写一份2024年度行政部门工作总结')">工作总结</div>
-  <div class="quick-btn" onclick="quick('请帮我起草一份关于举办员工技能大赛的请示')">公文请示</div>
+    <h3>快捷功能</h3>
+    <div class="quick-btn" onclick="quick('写一份关于本周五下午开会的通知')">写会议通知</div>
+    <div class="quick-btn" onclick="quick('把刚才那段话改得更严肃一点')">更严肃一点</div>
+    <div class="quick-btn" onclick="quick('把内容精简到 200 字以内')">内容精简</div>
 </div>
 
 <div class="main">
-  <div id="chat" class="chat">
-      <div class="msg bot">你好！我是您的公文写作助手。请输入您的写作需求，或点击左侧快捷功能。</div>
-  </div>
-
-  <div class="input-box">
-    <textarea id="input" placeholder="请输入你的需求... (Ctrl+Enter 发送)"></textarea>
-    <button id="sendBtn">发送</button>
-  </div>
+    <div id="chat" class="chat">
+        <div class="msg bot">你好！我是您的公文写作助手。我已具备上下文记忆能力，您可以随时要求我对生成的内容进行修改。</div>
+    </div>
+    <div class="input-box">
+        <textarea id="input" placeholder="输入需求或修改意见... (Ctrl+Enter 发送)"></textarea>
+        <button id="sendBtn">发送</button>
+    </div>
 </div>
 
 <script>
@@ -57,73 +45,68 @@ const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 const sendBtn = document.getElementById("sendBtn");
 
-// 添加消息
+// 关键：维护一个数组存储对话历史
+let chatHistory = [];
+
 function addMsg(text, cls) {
-  const div = document.createElement("div");
-  div.className = "msg " + cls;
-  div.innerText = text;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-  return div;
+    const div = document.createElement("div");
+    div.className = "msg " + cls;
+    div.innerText = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    return div;
 }
 
-// 快捷按钮
 function quick(text) {
-  input.value = text;
-  input.focus();
+    input.value = text;
+    input.focus();
 }
 
-// 发送消息
 async function send() {
-  const text = input.value.trim();
-  if (!text || sendBtn.disabled) return;
+    const text = input.value.trim();
+    if (!text || sendBtn.disabled) return;
 
-  addMsg(text, "user");
-  input.value = "";
+    addMsg(text, "user");
+    input.value = "";
+    sendBtn.disabled = true;
+    const loadingMsg = addMsg("正在思考...", "bot");
 
-  sendBtn.disabled = true;
-  const loadingMsg = addMsg("正在斟酌文辞，请稍候...", "bot");
+    try {
+        const res = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            // 发送当前消息 + 之前的历史记录
+            body: JSON.stringify({ 
+                message: text,
+                history: chatHistory 
+            })
+        });
 
-  try {
-    const cid = localStorage.getItem("cid");
+        const data = await res.json();
 
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: text,
-        conversation_id: cid
-      })
-    });
+        if (data.content) {
+            loadingMsg.innerText = data.content;
+            
+            // 更新本地历史记录：存入本次的用户提问和 AI 回复
+            chatHistory.push({ role: "user", content: text, content_type: "text" });
+            chatHistory.push({ role: "assistant", content: data.content, content_type: "text" });
 
-    const data = await res.json();
-
-    // 👇 保存会话ID
-    if (data.conversation_id) {
-      localStorage.setItem("cid", data.conversation_id);
+            // 限制记忆长度，只保留最近 10 轮对话防止请求体过大
+            if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+        } else {
+            loadingMsg.innerText = "出错了：" + (data.error || "未知异常");
+        }
+    } catch (err) {
+        loadingMsg.innerText = "网络异常，请检查后端部署。";
+    } finally {
+        sendBtn.disabled = false;
     }
-
-    // 👇 正确字段
-    if (data.reply) {
-      loadingMsg.innerText = data.reply;
-    } else {
-      loadingMsg.innerText = "未获取到有效回复";
-    }
-
-  } catch (err) {
-    loadingMsg.innerText = "网络连接失败";
-  } finally {
-    sendBtn.disabled = false;
-  }
 }
-// 事件监听
+
 sendBtn.addEventListener("click", send);
 input.addEventListener("keydown", (e) => {
-    if (e.ctrlKey && e.key === 'Enter') {
-        send();
-    }
+    if (e.ctrlKey && e.key === 'Enter') send();
 });
 </script>
-
 </body>
 </html>
