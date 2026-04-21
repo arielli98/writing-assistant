@@ -1,22 +1,27 @@
 // api/chat.js
-export default async function handler(req, res) {
-  // 1. 检查环境变量是否配置
-  const apiKey = process.env.COZE_API_KEY;
-  const botId = process.env.COZE_BOT_ID;
+// 使用 Node.js 原生支持的 fetch (Node 18+)
+export default async function (req, res) {
+  // 1. 获取并清理变量
+  const apiKey = (process.env.COZE_API_KEY || '').trim();
+  const botId = (process.env.COZE_BOT_ID || '').trim();
 
+  // 2. 检查变量（这个 log 会出现在 Vercel 控制台，方便我们最后确认）
   if (!apiKey || !botId) {
-    console.error("缺少环境变量: 请确保在 Vercel 中配置了 COZE_API_KEY 和 COZE_BOT_ID");
-    return res.status(500).json({ error: "服务器环境配置错误" });
+    console.error("检测到变量缺失！请确认 Redeploy 是否成功。");
+    return res.status(200).json({ 
+      error: "环境变量未注入", 
+      tip: "请在 Vercel 后台点击 Deployments -> Redeploy" 
+    });
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: '仅支持 POST' });
+    return res.status(405).json({ error: '仅支持 POST 请求' });
   }
 
   try {
     const { message } = req.body;
 
-    const cozeResponse = await fetch('https://api.coze.cn/v3/chat', {
+    const cozeRes = await fetch('https://api.coze.cn/v3/chat', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -24,23 +29,25 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         bot_id: botId,
-        user_id: "official_doc_user",
+        user_id: "user_" + Math.random().toString(36).slice(2),
         stream: false,
-        additional_messages: [
-          { role: "user", content: message, content_type: "text" }
-        ]
+        additional_messages: [{ role: "user", content: message, content_type: "text" }]
       })
     });
 
-    const data = await cozeResponse.json();
+    const data = await cozeRes.json();
     
-    // 打印日志方便调试（在 Vercel Logs 中查看）
-    console.log("Coze API 返回内容:", JSON.stringify(data));
+    // 如果 Coze 报错（比如之前的 4101），我们直接把 Coze 的原始错误传给前端，方便调试
+    if (data.code && data.code !== 0) {
+      return res.status(200).json({ 
+        error: "Coze API 报错", 
+        detail: data.msg,
+        code: data.code 
+      });
+    }
 
-    // 返回给前端
     return res.status(200).json(data);
-  } catch (error) {
-    console.error("后端请求发生异常:", error);
-    return res.status(500).json({ error: "服务器内部异常", details: error.message });
+  } catch (err) {
+    return res.status(500).json({ error: "服务器内部异常", details: err.message });
   }
 }
