@@ -78,44 +78,44 @@ async function send() {
   const text = input.value.trim();
   if (!text || sendBtn.disabled) return;
 
-  // 1. 用户消息渲染
   addMsg(text, "user");
   input.value = "";
-  
-  // 2. 状态切换
+
   sendBtn.disabled = true;
   const loadingMsg = addMsg("正在斟酌文辞，请稍候...", "bot");
 
   try {
-    const cid = localStorage.getItem("cid"); // 👈 新增
+    const cid = localStorage.getItem("cid");
 
-const res = await fetch("/api/chat", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    message: text,
-    conversation_id: cid   // 👈 新增
-  })
-});
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: text,
+        conversation_id: cid
+      })
+    });
 
     const data = await res.json();
 
-    // 3. 结果处理（匹配后端返回的 content 字段）
-    if (data.content) {
-        loadingMsg.innerText = data.content;
-    } else if (data.error) {
-        loadingMsg.innerText = "抱歉，生成出错：" + (data.detail || data.error);
+    // 👇 保存会话ID
+    if (data.conversation_id) {
+      localStorage.setItem("cid", data.conversation_id);
+    }
+
+    // 👇 正确字段
+    if (data.reply) {
+      loadingMsg.innerText = data.reply;
     } else {
-        loadingMsg.innerText = "未获取到有效回复，请检查后端日志。";
+      loadingMsg.innerText = "未获取到有效回复";
     }
 
   } catch (err) {
-    loadingMsg.innerText = "网络连接失败，请检查后端部署是否成功。";
+    loadingMsg.innerText = "网络连接失败";
   } finally {
     sendBtn.disabled = false;
   }
 }
-
 // 事件监听
 sendBtn.addEventListener("click", send);
 input.addEventListener("keydown", (e) => {
