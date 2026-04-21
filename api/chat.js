@@ -35,6 +35,9 @@ export default async function (req, res) {
     });
 
     const data = await response.json();
+    if (data.conversation_id) {
+  localStorage.setItem("cid", data.conversation_id);
+}
 
     // 4. 解析 Coze 的返回结果
     if (data.code === 0 && data.messages) {
