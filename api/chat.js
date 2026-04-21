@@ -21,10 +21,8 @@ export async function POST(req) {
     console.log("Coze返回：", data);
 
     return Response.json({
-      reply:
-        data?.messages?.[0]?.content ||
-        data?.messages?.find(m => m.type === "answer")?.content ||
-        "AI无返回"
+  reply: JSON.stringify(data)
+});
     });
 
   } catch (err) {
