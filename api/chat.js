@@ -1,35 +1,59 @@
-export async function POST(req) {
-  const { message } = await req.json();
-
+export async function POST(req: Request) {
   try {
-    const res = await fetch("https://api.coze.com/open_api/v2/chat", {
+    const { message } = await req.json();
+
+    if (!message) {
+      return Response.json({
+        reply: "请输入内容"
+      });
+    }
+
+    const response = await fetch("https://api.coze.com/open_api/v2/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${process.env.COZE_API_TOKEN}`
       },
       body: JSON.stringify({
-        bot_id: "7628532944344563752",
+        bot_id: process.env.COZE_BOT_ID, // 👈 用环境变量（更安全）
         user: "user_123",
         query: message,
         stream: false
       })
     });
 
-    const data = await res.json();
+    // 👉 防止接口直接报错（不是200）
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("❌ Coze HTTP错误:", text);
 
-    console.log("Coze返回：", data);
+      return Response.json({
+        reply: "接口错误：" + text
+      });
+    }
+
+    const data = await response.json();
+
+    console.log("✅ Coze返回:", JSON.stringify(data));
+
+    // 👉 兼容各种返回结构（核心）
+    const reply =
+      data?.messages?.find((m: any) => m.type === "answer")?.content ||
+      data?.messages?.[0]?.content ||
+      data?.output ||
+      data?.data?.content ||
+      data?.choices?.[0]?.message?.content ||
+      "AI无返回";
 
     return Response.json({
-  reply: JSON.stringify(data)
-});
+      reply
     });
 
-  } catch (err) {
-    console.error("报错：", err);
+  } catch (err: any) {
+    console.error("🔥 后端报错:", err);
 
     return Response.json({
-      reply: "报错：" + err.message
+      reply: "后端报错：" + (err.message || "未知错误")
     });
   }
 }
